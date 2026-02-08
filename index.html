@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoFit — Local Web3 Climate Fitness</title>
+
+<style>
+:root{
+  --green:#00ff9c;
+  --dark:#0b0f0e;
+  --card:#121b19;
+  --muted:#9bbfb1;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI,sans-serif;
+}
+
+body{
+  background:radial-gradient(circle at top,#10201a,var(--dark));
+  color:#e7fff5;
+}
+
+section{
+  max-width:1200px;
+  margin:auto;
+  padding:70px 20px;
+}
+
+h1,h2,h3{color:var(--green)}
+p{color:var(--muted);line-height:1.7}
+
+.hero{
+  text-align:center;
+  padding:100px 20px 80px;
+}
+.hero h1{
+  font-size:3.2rem;
+  text-shadow:0 0 20px rgba(0,255,156,.4);
+}
+.hero p{
+  max-width:760px;
+  margin:20px auto;
+}
+
+.card{
+  background:var(--card);
+  padding:30px;
+  border-radius:18px;
+  box-shadow:0 0 25px rgba(0,255,156,.08);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:25px;
+  margin-top:30px;
+}
+
+input,select{
+  width:100%;
+  padding:12px 15px;
+  margin:15px 0;
+  border-radius:12px;
+  border:none;
+  background:#0c1412;
+  color:#fff;
+  font-size:1rem;
+}
+
+button{
+  padding:12px 26px;
+  border-radius:30px;
+  border:1px solid var(--green);
+  background:transparent;
+  color:var(--green);
+  cursor:pointer;
+  transition:.3s;
+}
+button:hover{
+  background:var(--green);
+  color:#000;
+  box-shadow:0 0 18px rgba(0,255,156,.6);
+}
+
+.stat{
+  font-size:2.3rem;
+  margin-top:10px;
+}
+
+.badge{
+  display:inline-block;
+  padding:8px 16px;
+  border-radius:20px;
+  background:#0c1412;
+  color:var(--green);
+  margin:6px 6px 0 0;
+  font-size:.9rem;
+}
+
+footer{
+  text-align:center;
+  padding:30px;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>EcoFit</h1>
+  <p>
+    A local Web3-inspired platform that converts physical activity
+    into verifiable climate impact and eco-reward tokens 🌱
+  </p>
+</div>
+
+<!-- WALLET -->
+<section>
+<h2>Local Wallet</h2>
+<div class="card">
+  <p id="wallet">Wallet not created</p>
+  <p>EcoToken Balance: <strong id="balance">0</strong> ECO</p>
+  <button onclick="createWallet()">Create Wallet</button>
+</div>
+</section>
+
+<!-- ACTIVITY -->
+<section>
+<h2>Activity Tracker</h2>
+<div class="card">
+
+<label>Select Activity</label>
+<select id="activity">
+  <option value="">-- Choose Activity --</option>
+  <option value="walking">Walking (steps)</option>
+  <option value="cycling">Cycling (km)</option>
+  <option value="running">Running (minutes)</option>
+</select>
+
+<label>Enter Value</label>
+<input type="number" id="value" placeholder="e.g. 4000">
+
+<button onclick="submitActivity()">Submit Activity</button>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>🔥 Calories Burnt</h3>
+    <div class="stat" id="calories">0</div>
+  </div>
+
+  <div class="card">
+    <h3>🌱 CO₂ Saved (kg)</h3>
+    <div class="stat" id="carbon">0</div>
+  </div>
+
+  <div class="card">
+    <h3>🌟 EcoScore</h3>
+    <div class="stat" id="score">0</div>
+  </div>
+</div>
+</section>
+
+<!-- BADGES -->
+<section>
+<h2>Eco Badges</h2>
+<div id="badges"></div>
+</section>
+
+<footer>
+EcoFit © 2026 | Local Web3 Climate Startup MVP
+</footer>
+
+<script>
+let wallet = null;
+
+/* -------- CREATE WALLET -------- */
+async function createWallet(){
+  const res = await fetch("http://127.0.0.1:5000/create_wallet", {
+    method: "POST"
+  });
+  const data = await res.json();
+  wallet = data.wallet;
+
+  document.getElementById("wallet").innerHTML =
+    `Wallet ID:<br><strong>${wallet}</strong>`;
+  document.getElementById("balance").innerText = data.balance;
+}
+
+/* -------- SUBMIT ACTIVITY -------- */
+async function submitActivity(){
+  if(!wallet){
+    alert("Create wallet first");
+    return;
+  }
+
+  const activity = document.getElementById("activity").value;
+  const value = document.getElementById("value").value;
+
+  if(!activity || value <= 0){
+    alert("Enter valid activity data");
+    return;
+  }
+
+  const res = await fetch("http://127.0.0.1:5000/submit_activity", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ wallet, activity, value })
+  });
+
+  const data = await res.json();
+  if(data.error){
+    alert(data.error);
+    return;
+  }
+
+  document.getElementById("calories").innerText = data.calories.toFixed(1);
+  document.getElementById("carbon").innerText = data.carbon.toFixed(2);
+  document.getElementById("score").innerText = data.ecoScore;
+  document.getElementById("balance").innerText = data.balance;
+
+  updateBadges(data.calories, data.carbon);
+}
+
+/* -------- BADGES -------- */
+function updateBadges(cal, car){
+  let html = "";
+  if(cal > 150) html += '<span class="badge">🌱 Green Starter</span>';
+  if(cal > 300) html += '<span class="badge">🔥 Eco Warrior</span>';
+  if(car > 1) html += '<span class="badge">🌍 Planet Hero</span>';
+  document.getElementById("badges").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
