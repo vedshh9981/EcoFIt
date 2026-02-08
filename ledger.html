@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EcoFit Blockchain Explorer</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background: #0b0f0e;
+  color: #e7fff5;
+  margin: 0;
+  padding: 0;
+}
+
+header{
+  background: #121b19;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 2px solid #00ff9c;
+}
+
+h1{
+  color: #00ff9c;
+}
+
+.container{
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.block{
+  background: #121b19;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 20px rgba(0,255,156,.15);
+}
+
+.block h2{
+  color: #00ff9c;
+  margin-bottom: 10px;
+}
+
+.label{
+  color: #9bbfb1;
+  font-size: 0.9rem;
+}
+
+.value{
+  word-break: break-all;
+  margin-bottom: 8px;
+}
+
+.hash{
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #00ff9c;
+}
+
+.prev{
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #ff6b6b;
+}
+
+footer{
+  text-align: center;
+  padding: 15px;
+  color: #9bbfb1;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>EcoFit Blockchain Explorer</h1>
+  <p>Transparent • Immutable • Local Ledger</p>
+</header>
+
+<div class="container" id="chain">
+  Loading blockchain data...
+</div>
+
+<footer>
+  EcoFit © 2026 — Local Proof-of-Impact Blockchain
+</footer>
+
+<script>
+async function loadBlockchain(){
+  const res = await fetch("http://127.0.0.1:5000/ledger");
+  const chain = await res.json();
+
+  const container = document.getElementById("chain");
+  container.innerHTML = "";
+
+  if(chain.length === 0){
+    container.innerHTML = "<p>No blocks yet. Submit activity first.</p>";
+    return;
+  }
+
+  chain.forEach((block, index) => {
+    const div = document.createElement("div");
+    div.className = "block";
+
+    const date = new Date(block.timestamp * 1000).toLocaleString();
+
+    div.innerHTML = `
+      <h2>Block #${index}</h2>
+
+      <div class="label">Timestamp</div>
+      <div class="value">${date}</div>
+
+      <div class="label">Wallet</div>
+      <div class="value">${block.data.wallet}</div>
+
+      <div class="label">Activity</div>
+      <div class="value">${block.data.activity} (${block.data.value})</div>
+
+      <div class="label">Calories Burned</div>
+      <div class="value">${block.data.calories.toFixed(1)}</div>
+
+      <div class="label">CO₂ Saved (kg)</div>
+      <div class="value">${block.data.carbon.toFixed(2)}</div>
+
+      <div class="label">Eco Score</div>
+      <div class="value">${block.data.ecoScore}</div>
+
+      <div class="label">Tokens Minted</div>
+      <div class="value">${block.data.tokens}</div>
+
+      <div class="label">Block Hash</div>
+      <div class="hash">${block.hash}</div>
+
+      <div class="label">Previous Hash</div>
+      <div class="prev">${block.prev_hash}</div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+loadBlockchain();
+</script>
+
+</body>
+</html>

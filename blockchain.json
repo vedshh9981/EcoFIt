@@ -82,5 +82,19 @@
     },
     "prev_hash": "ee40983bd6413b45fc7bad5d30a6f897ca38081a9d8781e0c2ccf7e14f2cb3f2",
     "hash": "dd3bede434f1346c5b7d7b5e658800bf9bcca50b6fcf6959992c954b22d6dfc2"
+  },
+  {
+    "timestamp": 1770573667.5224931,
+    "data": {
+      "wallet": "ECO-F6EBF97C",
+      "activity": "walking",
+      "value": 15000.0,
+      "calories": 750.0,
+      "carbon": 1.3846153846153846,
+      "ecoScore": 1027,
+      "tokens": 103
+    },
+    "prev_hash": "dd3bede434f1346c5b7d7b5e658800bf9bcca50b6fcf6959992c954b22d6dfc2",
+    "hash": "3354d89486223e79867e2d2958f810eea53ecdb1f03b7964f7186f01780b12f8"
   }
 ]
